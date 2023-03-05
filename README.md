@@ -4,9 +4,9 @@
 
 Crawls the tippecanoe county craigslist.  
 Send an alert to Slack channel when "affordable cars" appear.  
-Affordable cars:
-1. Toyota, Honda, Nissan, Acura, and Lexus
-2. Price range 4000$ ~ 7800$
+Affordable cars :
+1. Price range 4000$ ~ 7800$ ***and***
+2. Toyota, Honda, Nissan, Acura, and Lexus
 
 ## Run
 
