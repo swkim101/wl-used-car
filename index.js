@@ -20,26 +20,32 @@ const saveTitles = titles => {
   fs.writeFileSync("./db", JSON.stringify(titles))
 }
 
+const DEBUG = string => process.env.DEBUG === 'true' && console.log(string)
 
-const addr = `https://tippecanoe.craigslist.org/search/cta?max_price=7800&min_price=4000#search=1~gallery~0~0`;
+
+const addr = `https://tippecanoe.craigslist.org/search/cta?bundleDuplicates=1&max_price=7000&min_auto_year=2008&min_price=3000&postal=47906&search_distance=10`
 
 //
 (async () => {
   const browser = await await puppeteer.launch({
     executablePath: '/usr/bin/chromium-browser',
   });
+  DEBUG("exec browser")
   const page = await browser.newPage();
   await page.goto(addr);
   await page.setViewport({width: 1080, height: 1024});
 
-  const titlestringSelector = '.titlestring';
+  DEBUG("goto page")
+
+  const titlestringSelector = '.posting-title';
   await page.waitForSelector(titlestringSelector);
 
+  DEBUG("wait for selector")
   var title = await page.evaluate(() => [
-    ...document.querySelectorAll(".titlestring")
+    ...document.querySelectorAll(".posting-title > .label")
   ].map(e => e.innerHTML))
   var href = await page.evaluate(() => [
-    ...document.querySelectorAll(".titlestring")
+    ...document.querySelectorAll(".posting-title")
   ].map(e => e.href))
   var price = await page.evaluate(() => [
     ...document.querySelectorAll(".priceinfo")
@@ -61,6 +67,7 @@ const addr = `https://tippecanoe.craigslist.org/search/cta?max_price=7800&min_pr
   }
 
   if (newCarPosted) {
+    DEBUG("new car posted")
     text += `${process.env.NOTIFY_TO} new car(s)!\n`
     console.log(text)
     axios.post(`${process.env.WEBHOOK_URL}`,
@@ -68,6 +75,7 @@ const addr = `https://tippecanoe.craigslist.org/search/cta?max_price=7800&min_pr
     )
     saveTitles(title)
   } else {
+    DEBUG("no new car posted")
     const hours = (new Date()).getHours()
     if (10 < hours &&  hours < 23) {
       axios.post(`${process.env.WEBHOOK_URL}`,
